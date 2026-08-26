@@ -1,0 +1,5 @@
+```text
+fitness.db
+__pycache__/
+*.pyc
+.vscode/
