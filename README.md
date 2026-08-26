@@ -43,5 +43,5 @@ fitness/
 └── README.md            # Proje dokümantasyonu
 📝 Lisans
 
-
+---
 Bu proje eğitim ve kişisel kullanım amacıyla geliştirilmiştir. İstediğiniz gibi kullanabilir ve geliştirebilirsiniz.
