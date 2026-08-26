@@ -42,4 +42,6 @@ fitness/
 ├── fitness.db           # Yerel veritabanı dosyası (Otomatik oluşturulur)
 └── README.md            # Proje dokümantasyonu
 📝 Lisans
-Bu proje eğitim ve kişisel kullanım amacıyla geliştirilmiştir. İstediğiniz gibi çatallayabilir (fork) ve geliştirebilirsiniz.
+
+
+Bu proje eğitim ve kişisel kullanım amacıyla geliştirilmiştir. İstediğiniz gibi kullanabilir ve geliştirebilirsiniz.
