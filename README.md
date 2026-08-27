@@ -1,47 +1,85 @@
-Markdown
 # 🏋️‍♂️ 30-Day Fitness & Calorie Command Center
 
-Modern, şık ve kullanımı kolay bir masaüstü fitness, kalori ve antrenman takip uygulaması. **CustomTkinter** arayüzü ve **SQLite** veritabanı altyapısı ile geliştirilmiştir.
-
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![CustomTkinter](https://img.shields.io/badge/UI-CustomTkinter-blue?style=for-the-badge)
-![SQLite](https://img.shields.io/badge/Database-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+Modern, şık ve kullanımı kolay bir masaüstü **Masaüstü Fitness ve Sağlık Takip Uygulaması**.  
+Bu uygulama; günlük egzersizlerinizi, yürüyüşlerinizi, su tüketiminizi, kilonuzu ve VKI (BMI) değerlerinizi tek bir merkezden takip etmenizi sağlar.
 
 ---
 
-## ✨ Özellikler
+## ✨ Öne Çıkan Özellikler
 
-* **🏠 Ana Dashboard:** Günlük toplam harcanan kalori, su tüketimi ve son 7 günün kalori yakım grafiği (`Matplotlib` entegrasyonu).
-* **🏃 Egzersiz & Yürüyüş Takibi:** Günlük adım, yürüyüş süresi ve egzersiz bazlı set/tekrar/kalori takibi.
-* **⚙️ Egzersiz Kütüphanesi Yönetimi:** Özel egzersizler ekleme, mevcut egzersizlerin parametrelerini (Set, Tekrar, kcal) düzenleme ve silme.
-* **⚖️ Kilo & VKI (BMI) Takibi:** Günlük kilo kaydı, VKI hesaplama ve kilo değişim trend grafiği.
-* **🎯 Kişiselleştirilebilir Hedefler:** Günlük kalori ve su tüketim hedeflerini dinamik olarak ayarlama.
-* **📊 Excel İçe / Dışa Aktarma:** Verileri `.xlsx` formatında dışa aktarma ve yedeklenen verileri geri yükleme.
+* **🔥 Ana Dashboard:** 
+  * Günlük toplam harcanan kalori ve su tüketimi ilerleme barları.
+  * Hızlı su ekleme butonları (+250ml, +500ml).
+  * Günlük not / ruh hali kaydı.
+  * Son 7 günün kalori yakım trendini gösteren dinamik grafik.
+
+* **🏃 Egzersiz & Yürüyüş Yönetimi:**
+  * Günlük yürüyüş süresi, adım sayısı ve kalori kaydı.
+  * Egzersizleri **✅ Yapıldı**, **❌ Atlandı** veya **🔄 Sıfırla (Beklemede)** olarak işaretleme.
+  * Set, tekrar veya birim kalori değerlerini anlık olarak güncelleyebilme.
+  * Tarihe özel dinamik kart renkleri (Yeşil: Yapıldı, Kırmızı: Atlandı, Nötr: Beklemede).
+
+* **⚙️ Egzersiz Kütüphanesi:**
+  * Sık kullandığınız hareketleri (Şınav, Mekik, Squat vb.) varsayılan set/tekrar ve kalori değerleriyle kütüphaneye kaydetme.
+  * Kütüphanedeki egzersizleri düzenleme veya silme.
+
+* **⚖️ Kilo & VKI (BMI) Takibi:**
+  * Boy ve kilo bilgisine göre anlık VKI (Vücut Kitle İndeksi) hesaplama ve durum analizi.
+  * Zaman içindeki kilo değişimini gösteren Matplotlib destekli çizgi grafiği.
+
+* **🎯 Kişiselleştirilebilir Hedefler:**
+  * Günlük hedef kalori ve su miktarını belirleyebilme.
+
+* **📊 Analiz & Raporlar:**
+  * Toplam ve ortalama kalori yakımları, tamamlanan/atlanan antrenman sayıları.
+
+* **📊 Excel Entegrasyonu (İçe / Dışa Aktarma):**
+  * Tüm verilerinizi tek tıkla `.xlsx` formatında dışa aktarma (Yedekleme).
+  * Daha önce kaydettiğiniz Excel dosyalarını uygulamaya geri yükleme.
 
 ---
 
-## 🛠️ Kurulum
+## 🛠️ Teknolojiler ve Kütüphaneler
 
-Projeyi yerel makinenizde çalıştırmak için aşağıdaki adımları izleyin.
+* **Dil:** Python 3.10+
+* **Arayüz (GUI):** `CustomTkinter` (Modern Dark Mode temasıyla)
+* **Veritabanı:** SQLite3 (Yerel ve hızlı veri depolama)
+* **Veri Görselleştirme:** `Matplotlib` (Dinamik grafikler için)
+* **Excel İşlemleri:** `openpyxl`
 
-### 1. Repoyu klonlayın
+---
+
+## 🚀 Kurulum ve Çalıştırma
+
+### 1. Depoyu Klonlayın veya İndirin
 ```bash
-git clone [https://github.com/YEMRESTT/fitness-command-center.git](https://github.com/YEMRESTT/fitness-command-center.git)
+git clone [https://github.com/kullanici-adi/fitness-command-center.git](https://github.com/kullanici-adi/fitness-command-center.git)
 cd fitness-command-center
-2. Gerekli kütüphaneleri yükleyin
+```
+2. Gerekli Kütüphaneleri Yükleyin
+```
+Uygulamanın sorunsuz çalışması için gerekli bağımlılıkları yükleyin:
+
 Bash
 pip install customtkinter matplotlib openpyxl
-3. Uygulamayı başlatın
+```
+3. Uygulamayı Başlatın
+```
 Bash
 python main.py
-📁 Proje Yapısı
+📁 Proje Dosya Yapısı
 Plaintext
-fitness/
-├── main.py              # CustomTkinter arayüzü ve ana uygulama mantığı
-├── database.py          # SQLite veritabanı bağlantısı ve tablo mantıkları
-├── fitness.db           # Yerel veritabanı dosyası (Otomatik oluşturulur)
+├── main.py              # Uygulamanın ana grafik arayüzü (GUI) ve sayfa mantıkları
+├── database.py          # SQLite veritabanı bağlantıları ve Tablo oluşturma işlemleri
+├── fitness_tracker.db   # Otomatik oluşturulan yerel veritabanı dosyası
+├── app_icon.ico         # (Opsiyonel) Uygulama ikonu
 └── README.md            # Proje dokümantasyonu
 ```
+---
+📝 Kullanım İpuçları
+```
+İlk Başlangıç: Uygulama ilk açıldığında varsayılan egzersiz kütüphanesini ve fitness_tracker.db dosyasını otomatik olarak oluşturur.
 
+Durum Sıfırlama: Egzersiz kartlarındaki 🔄 butonuna basarak yanlışlıkla işaretlediğiniz bir hareketin durumunu tekrar nötr hale getirebilirsiniz.
 
-### Bu proje eğitim ve kişisel kullanım amacıyla geliştirilmiştir. İstediğiniz gibi kullanabilir ve geliştirebilirsiniz.
+Yedek Alma: Verilerinizi kaybetmemek için istediğiniz zaman "Excel'e Aktar" butonunu kullanabilirsiniz.
