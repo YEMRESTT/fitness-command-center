@@ -20,10 +20,9 @@ class FitnessDashboard(ctk.CTk):
         self.title("30-Day Fitness & Calorie Command Center")
         self.geometry("1350x920")
         
-        # Temiz kapanış protokolü (asılı kalma hatasını çözer)
+        # Temiz kapanış protokolü
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         
-        # İkon dosyası varsa pencereye ekle
         if os.path.exists("app_icon.ico"):
             try:
                 self.iconbitmap("app_icon.ico")
@@ -71,7 +70,6 @@ class FitnessDashboard(ctk.CTk):
         self.show_dashboard()
 
     def on_closing(self):
-        """Pencere kapatıldığında arka plan zamanlayıcılarını temiz şekilde sonlandırır."""
         try:
             self.quit()
             self.destroy()
@@ -175,7 +173,6 @@ class FitnessDashboard(ctk.CTk):
 
         ctk.CTkButton(note_frame, text="Kaydet", width=80, fg_color="#8e44ad", command=save_note).pack(side="right", padx=10, pady=(0, 10))
 
-        # Lazy Import ile Grafik Çizimi
         ctk.CTkLabel(self.main_frame, text="📈 Son 7 Günlük Kalori Yakımı", font=ctk.CTkFont(size=18, weight="bold")).pack(anchor="w", pady=(15, 5), padx=10)
         today_date = datetime.now()
         dates, total_cals = [], []
@@ -279,6 +276,90 @@ class FitnessDashboard(ctk.CTk):
         ctk.CTkButton(btn_box, text="Varsayılana Dön (2000 kcal / 2.5 L)", fg_color="#7f8c8d", command=reset_defaults).pack(side="left")
 
     # --- EGZERSİZ VE YÜRÜYÜŞ ---
+    def open_add_exercise_dialog(self):
+        dialog = ctk.CTkToplevel(self)
+        dialog.title("Programına Egzersiz Ekle")
+        dialog.geometry("420x400")
+        dialog.grab_set()
+
+        ctk.CTkLabel(dialog, text="➕ Programa Egzersiz Ekle", font=ctk.CTkFont(size=18, weight="bold")).pack(pady=15)
+
+        conn = sqlite3.connect(db.DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name, sets, reps, cal_per_rep FROM exercises")
+        lib_exercises = cursor.fetchall()
+        conn.close()
+
+        lib_dict = {ex[0]: ex for ex in lib_exercises}
+        options = list(lib_dict.keys()) if lib_exercises else ["Özel Egzersiz"]
+
+        ctk.CTkLabel(dialog, text="Kütüphaneden Seç veya Yeni Yaz:").pack(anchor="w", padx=25, pady=(5, 2))
+        combo = ctk.CTkComboBox(dialog, values=options, width=370)
+        combo.pack(padx=25, pady=5)
+
+        f_inputs = ctk.CTkFrame(dialog, fg_color="transparent")
+        f_inputs.pack(pady=10, padx=25, fill="x")
+
+        e_sets = ctk.CTkEntry(f_inputs, placeholder_text="Set", width=100)
+        e_sets.insert(0, "3")
+        e_sets.grid(row=0, column=0, padx=5, pady=5)
+
+        e_reps = ctk.CTkEntry(f_inputs, placeholder_text="Tekrar", width=100)
+        e_reps.insert(0, "12")
+        e_reps.grid(row=0, column=1, padx=5, pady=5)
+
+        e_cal = ctk.CTkEntry(f_inputs, placeholder_text="kcal/tekrar", width=120)
+        e_cal.insert(0, "0.5")
+        e_cal.grid(row=0, column=2, padx=5, pady=5)
+
+        def on_select(selected):
+            if selected in lib_dict:
+                _, s, r, c = lib_dict[selected]
+                e_sets.delete(0, "end"); e_sets.insert(0, str(s))
+                e_reps.delete(0, "end"); e_reps.insert(0, str(r))
+                e_cal.delete(0, "end"); e_cal.insert(0, str(c))
+
+        combo.configure(command=on_select)
+
+        def add_to_today():
+            ex_name = combo.get().strip()
+            if not ex_name:
+                messagebox.showerror("Hata", "Lütfen geçerli bir egzersiz adı girin.")
+                return
+            try:
+                s = int(e_sets.get())
+                r = int(e_reps.get())
+                c = float(e_cal.get())
+                tot = int(s * r * c)
+
+                today = datetime.now().strftime("%Y-%m-%d")
+                c_conn = sqlite3.connect(db.DB_NAME)
+                c_cursor = c_conn.cursor()
+                c_cursor.execute('''INSERT OR REPLACE INTO workout_logs 
+                                    (date, exercise_name, sets, reps, cal_per_rep, total_calories, completed) 
+                                    VALUES (?, ?, ?, ?, ?, ?, 0)''',
+                                 (today, ex_name, s, r, c, tot))
+                c_conn.commit()
+                c_conn.close()
+
+                dialog.destroy()
+                self.show_combined_activity()
+            except ValueError:
+                messagebox.showerror("Hata", "Set, tekrar ve kalori için sayısal değerler girin.")
+
+        ctk.CTkButton(dialog, text="Programa Ekle", fg_color="#27ae60", hover_color="#219150", width=200, command=add_to_today).pack(pady=20)
+
+    def remove_exercise_from_today(self, ex_name):
+        confirm = messagebox.askyesno("Egzersizi Çıkar", f"'{ex_name}' hareketini bugünkü programından çıkarmak istediğine emin misin?")
+        if confirm:
+            today = datetime.now().strftime("%Y-%m-%d")
+            conn = sqlite3.connect(db.DB_NAME)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM workout_logs WHERE date = ? AND exercise_name = ?", (today, ex_name))
+            conn.commit()
+            conn.close()
+            self.show_combined_activity()
+
     def show_combined_activity(self):
         self.clear_main_frame()
         today = datetime.now().strftime("%Y-%m-%d")
@@ -314,7 +395,11 @@ class FitnessDashboard(ctk.CTk):
 
         ctk.CTkButton(walk_frame, text="Yürüyüşü Kaydet", fg_color="#2980b9", width=130, command=save_walk).pack(side="right", padx=10, pady=10)
 
-        ctk.CTkLabel(self.main_frame, text="🏃 Bugünkü Egzersiz Programın", font=ctk.CTkFont(size=18, weight="bold")).pack(anchor="w", pady=(20, 5), padx=10)
+        ex_header_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        ex_header_frame.pack(fill="x", pady=(20, 5), padx=10)
+
+        ctk.CTkLabel(ex_header_frame, text="🏃 Bugünkü Egzersiz Programın", font=ctk.CTkFont(size=18, weight="bold")).pack(side="left")
+        ctk.CTkButton(ex_header_frame, text="➕ Yeni Egzersiz Ekle", fg_color="#27ae60", hover_color="#219150", command=self.open_add_exercise_dialog).pack(side="right")
 
         conn = sqlite3.connect(db.DB_NAME)
         cursor = conn.cursor()
@@ -369,12 +454,30 @@ class FitnessDashboard(ctk.CTk):
                                         VALUES (?, ?, ?, ?, ?, ?, ?)''', (today, ex_name, s, r, c, calc, status))
                     c_conn.commit()
                     c_conn.close()
-                    frame.configure(fg_color="#1e4620" if status == 1 else "#4a1515")
+                    
+                    # Renk güncellemesi (1: Yapıldı/Yeşil, -1: Atlandı/Kırmızı, 0: Beklemede/Gri)
+                    if status == 1:
+                        bg_c = "#1e4620"
+                    elif status == -1:
+                        bg_c = "#4a1515"
+                    else:
+                        bg_c = "#2b2b2b"
+                        
+                    frame.configure(fg_color=bg_c)
                     lbl.configure(text=f"🔥 {calc} kcal")
                 return mark_ex
 
-            ctk.CTkButton(row, text="❌", width=40, fg_color="#c0392b", command=make_mark_func(name, -1, row, e_sets, e_reps, e_cal_rep, lbl_tot_cal)).pack(side="right", padx=3)
-            ctk.CTkButton(row, text="✅", width=40, fg_color="#27ae60", command=make_mark_func(name, 1, row, e_sets, e_reps, e_cal_rep, lbl_tot_cal)).pack(side="right", padx=3)
+            # 🗑️ Sil Butonu
+            ctk.CTkButton(row, text="🗑️", width=35, fg_color="#7f8c8d", hover_color="#95a5a6", command=lambda ex=name: self.remove_exercise_from_today(ex)).pack(side="right", padx=(2, 8))
+
+            # 🔄 Durumu Sıfırla (Nötr / Beklemede Yap)
+            ctk.CTkButton(row, text="🔄", width=35, fg_color="#d35400", hover_color="#e67e22", command=make_mark_func(name, 0, row, e_sets, e_reps, e_cal_rep, lbl_tot_cal)).pack(side="right", padx=2)
+
+            # ❌ Atlandı Butonu
+            ctk.CTkButton(row, text="❌", width=35, fg_color="#c0392b", hover_color="#e74c3c", command=make_mark_func(name, -1, row, e_sets, e_reps, e_cal_rep, lbl_tot_cal)).pack(side="right", padx=2)
+
+            # ✅ Yapıldı Butonu
+            ctk.CTkButton(row, text="✅", width=35, fg_color="#27ae60", hover_color="#2ecc71", command=make_mark_func(name, 1, row, e_sets, e_reps, e_cal_rep, lbl_tot_cal)).pack(side="right", padx=2)
 
         conn.close()
 
@@ -472,7 +575,7 @@ class FitnessDashboard(ctk.CTk):
         e_cal = ctk.CTkEntry(f_inner, placeholder_text="kcal/tekrar", width=90)
         e_cal.pack(side="left", padx=5)
 
-        editing_id = {"id": None}  # Düzenleme modunu takip etmek için mutable state
+        editing_id = {"id": None}
 
         def save_or_update_ex():
             name_val = e_name.get().strip()
@@ -492,7 +595,6 @@ class FitnessDashboard(ctk.CTk):
             cursor = conn.cursor()
 
             if editing_id["id"] is None:
-                # Yeni Kayıt
                 try:
                     cursor.execute("INSERT INTO exercises (name, sets, reps, cal_per_rep) VALUES (?, ?, ?, ?)",
                                    (name_val, s_val, r_val, c_val))
@@ -500,7 +602,6 @@ class FitnessDashboard(ctk.CTk):
                 except sqlite3.IntegrityError:
                     messagebox.showerror("Hata", "Bu isimde bir egzersiz zaten mevcut.")
             else:
-                # Güncelleme
                 cursor.execute("UPDATE exercises SET name = ?, sets = ?, reps = ?, cal_per_rep = ? WHERE id = ?",
                                (name_val, s_val, r_val, c_val, editing_id["id"]))
                 conn.commit()
